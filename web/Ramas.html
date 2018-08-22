@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Documento sin título</title>
+</head>
+
+<body>
+<h1 id="que_es_una_rama">¿Qué es una rama?</h1>
+<p>Para entender realmente cómo ramifica Git, previamente hemos de examinar la forma en que almacena sus datos. Recordando lo citado en el <a href="http://librosweb.es/libro/pro_git/capitulo_3/que_es_una_rama.html#capitulo1">capítulo 1</a>, Git no los almacena de forma incremental (guardando solo diferencias), sino que los almacena como una serie de instantáneas (copias puntuales de los archivos completos, tal y como se encuentran en ese momento).</p>
+<p>En cada confirmación de cambios (<em>commit</em>), Git almacena un punto de control que conserva: un apuntador a la copia puntual de los contenidos preparados (<em>staged</em>), unos metadatos con el autor y el mensaje explicativo, y uno o varios apuntadores a las confirmaciones (<em>commit</em>) que sean padres directos de esta (un padre en los casos de confirmación normal, y múltiples padres en los casos de estar confirmando una fusión (<em>merge</em>) de dos o mas ramas).</p>
+<p>Para ilustrar esto, vamos a suponer, por ejemplo, que tienes una carpeta con tres archivos, que preparas (<em>stage</em>) todos ellos y los confirmas (<em>commit</em>). Al preparar los archivos, Git realiza una suma de control de cada uno de ellos (un resumen SHA-1, tal y como se mencionaba en el <a href="http://librosweb.es/libro/pro_git/capitulo_3/que_es_una_rama.html#capitulo1">capítulo 1</a>), almacena una copia de cada uno en el repositorio (estas copias se denominan <em>&quot;blobs&quot;</em>), y guarda cada suma de control en el área de preparación (<em>staging area</em>):</p>
+<div>
+  <pre>$ git add README test.rb LICENSE  $ git commit -m 'initial commit of my project'</pre>
+</div>
+<p>Cuando creas una confirmación con el comando git commit, Git realiza sumas de control de cada subcarpeta (en el ejemplo, solamente tenemos la carpeta principal del proyecto), y guarda en el repositorio Git una copia de cada uno de los archivos contenidos en ella/s. Después, Git crea un objeto de confirmación con los metadatos pertinentes y un apuntador al nodo correspondiente del árbol de proyecto. Esto permitirá poder regenerar posteriormente dicha instantánea cuando sea necesario.</p>
+<p>En este momento, el repositorio de Git contendrá cinco objetos: un <em>&quot;blob&quot;</em> para cada uno de los tres archivos, un árbol con la lista de contenidos de la carpeta (más sus respectivas relaciones con los <em>&quot;blobs&quot;</em>), y una confirmación de cambios (<em>commit</em>) apuntando a la raiz de ese árbol y conteniendo el resto de metadatos pertinentes. Conceptualmente, el contenido del repositorio Git será algo parecido a la Figura 3-1</p>
+<p><img src="http://librosweb.es/img/pro_git/18333fig0301.png" alt="Datos en el repositorio tras una confirmaciÃ³n sencilla"/></p>
+<p>Una rama Git es simplemente un apuntador móvil apuntando a una de esas confirmaciones. La rama por defecto de Git es la rama master. Con la primera confirmación de cambios que realicemos, se creará esta rama principal master apuntando a dicha confirmación. En cada confirmación de cambios que realicemos, la rama irá avanzando automáticamente. Y la rama master apuntará siempre a la última confirmación realizada.</p>
+<p><img src="http://librosweb.es/img/pro_git/18333fig0303.png" alt="Apuntadores en el registro de confirmaciones de una rama"/></p>
+<p>¿Qué sucede cuando creas una nueva rama? Pues que simplemente se crea un nuevo apuntador para que lo puedas mover libremente. Por ejemplo, si quieres crear una nueva rama denominada testingusarás el comando git branch:</p>
+<div>
+  <pre>$ git branch testing</pre>
+</div>
+<p>Esto creará un nuevo apuntador apuntando al mismo <em>commit</em> donde estés actualmente (ver Figura 3-4)</p>
+<p>Para saltar de una rama a otra, tienes que utilizar el comando git checkout. Hagamos una prueba, saltando a la rama testing recién creada:</p>
+<div>
+  <pre>$ git checkout testing</pre>
+</div>
+<p>Esto mueve el apuntador HEAD a la rama testing (ver Figura 3-6).</p>
+<p>Volviendo al problema urgente. Vamos a crear una nueva rama hotfix, sobre la que trabajar hasta resolverlo (ver Figura 3-13):</p>
+<div>
+  <pre>$ git checkout -b 'hotfix'  Switched to a new branch &quot;hotfix&quot;  $ vim index.html  $ git commit -a -m 'fixed the broken email address'  [hotfix]: created 3a0874c: &quot;fixed the broken email address&quot;   1 files changed, 0 insertions(+), 1 deletions(-)</pre>
+</div>
+<p><img src="http://librosweb.es/img/pro_git/18333fig0313.png" alt="Rama 'hotfix' basada en la rama &lt;code&gt;master&lt;/code&gt; original"/></p>
+<div id="figure_3_13">
+  <p><strong>Figura 3.13</strong> Rama 'hotfix' basada en la rama master original</p>
+</div>
+<p>Puedes realizar las pruebas oportunas, asegurarte que la solución es correcta, e incorporar los cambios a la rama master para ponerlos en producción. Esto se hace con el comando git merge:</p>
+<div>
+  <pre>$ git checkout master  
+$ git merge hotfix  Updating f42c576..3a0874c  
+Fast forward   README |    1 -   1 files changed, 0 insertions(+), 1 deletions(-)</pre>
+</div>
+<p>Merece destacar la frase <em>&quot;Avance rápido&quot;</em> (<em>&quot;Fast forward&quot;</em>) que aparece en la respuesta al comando. Git ha movido el apuntador hacia adelante, ya que la confirmación apuntada en la rama donde has fusionado estaba directamente por delante respecto de la confirmación actual. Dicho de otro modo: cuando intentas fusionar una confirmación con otra confirmación accesible siguiendo directamente el registro de la primera; Git simplifica las cosas avanzando el puntero, ya que no hay ningûn otro trabajo divergente a fusionar. Esto es lo que se denomina <em>&quot;avance rápido&quot;</em> (<em>&quot;fast forward&quot;</em>).</p>
+<p>Ahora, los cambios realizados están ya en la instantánea (<em>snapshot</em>) de la confirmación (<em>commit</em>) apuntada por la rama master. Y puedes desplegarlos (ver Figura 3-14)</p>
+<p>&nbsp;</p>
+<p><img src="http://librosweb.es/img/pro_git/18333fig0314.png" alt="Tras la fusiÃ³n (*merge*), la rama &lt;code&gt;master&lt;/code&gt; apunta al mismo sitio que la rama &lt;code&gt;hotfix&lt;/code&gt;"/></p>
+<p>&nbsp;</p>
+<div id="figure_3_14">
+  <p><strong>Figura 3.14</strong> Tras la fusión (*merge*), la rama master apunta al mismo sitio que la rama hotfix</p>
+</div>
+<p>Tras haber resuelto el problema urgente que te habia interrumpido tu trabajo, puedes volver a donde estabas. Pero antes, es interesante borrar la rama hotfix. Ya que no la vamos a necesitar más, puesto que apunta exactamente al mismo sitio que la rama master. Esto lo puedes hacer con la opción -d del comando git branch:</p>
+<div>
+  <pre>$ git branch -d hotfix  Deleted branch hotfix (3a0874c).</pre>
+</div>
+<p>Y, con esto, ya estas dispuesto para regresar al trabajo sobre el problema #53 (ver Figura 3-15):</p>
+<div>
+  <pre>$ git checkout iss53  Switched to branch &quot;iss53&quot;  $ vim index.html  $ git commit -a -m 'finished the new footer [issue 53]'  [iss53]: created ad82d7a: &quot;finished the new footer [issue 53]&quot;   1 files changed, 1 insertions(+), 0 deletions(-)</pre>
+</div>
+<h3 id="publicando">3.5.1. Publicando</h3>
+<p>Cuando quieres compartir una rama con el resto del mundo, has de llevarla (<em>push</em>) a un remoto donde tengas permisos de escritura. Tus ramas locales no se sincronizan automáticamente con los remotos en los que escribes. Sino que tienes que llevar (<em>push</em>) expresamente, cada vez, al remoto las ramas que desees compartir. De esta forma, puedes usar ramas privadas para el trabajo que no deseas compartir. Llevando a un remoto tan solo aquellas partes que deseas aportar a los demás.</p>
+<p>Si tienes una rama llamada serverfix, con la que vas a trabajar en colaboración; puedes llevarla al remoto de la misma forma que llevaste tu primera rama. Con el comando git push (remoto) (rama):</p>
+<div>
+  <pre>$ git push origin serverfix  Counting objects: 20, done.  Compressing objects: 100% (14/14), done.  Writing objects: 100% (15/15), 1.74 KiB, done.  Total 15 (delta 5), reused 0 (delta 0)  To git@github.com:schacon/simplegit.git   * [new branch]      serverfix -&gt; serverfix</pre>
+</div>
+<p>Esto es un poco como un atajo. Git expande automáticamente el nombre de rama serverfix a refs/heads/serverfix:refs/heads/serverfix, que significa: &quot;coge mi rama local serverfix y actualiza con ella la rama serverfix del remoto&quot;. Volveremos más tarde sobre el tema de refs/heads/, viendolo en detalle en el capítulo 9; aunque puedes ignorarlo por ahora. También puedes hacer git push origin serverfix:serverfix, que hace lo mismo; es decir: &quot;coge mi serverfix y hazlo el serverfix remoto&quot;. Puedes utilizar este último formato para llevar una rama local a una rama remota con otro nombre distinto. Si no quieres que se llame serverfix en el remoto, puedes lanzar, por ejemplo, git push origin serverfix:awesomebranch; para llevar tu rama serverfix local a la rama awesomebranch en el proyecto remoto.</p>
+<p>La próxima vez que tus colaboradores recuperen desde el servidor, obtendrán una referencia a donde la versión de serverfix en el servidor esté bajo la rama remota origin/serverfix:</p>
+<div>
+  <pre>$ git fetch origin  remote: Counting objects: 20, done.  remote: Compressing objects: 100% (14/14), done.  remote: Total 15 (delta 5), reused 0 (delta 0)  Unpacking objects: 100% (15/15), done.  From git@github.com:schacon/simplegit   * [new branch]      serverfix    -&gt; origin/serverfix</pre>
+</div>
+<p>Es importante destacar que cuando recuperas (<em>fetch</em>) nuevas ramas remotas, no obtienes automáticamente una copia editable local de las mismas. En otras palabras, en este caso, no tienes una nueva rama serverfix. Sino que únicamente tienes un puntero no editable a origin/serverfix.</p>
+<p>Para integrar (<em>merge</em>) esto en tu actual rama de trabajo, puedes usar el comando git merge origin/serverfix. Y si quieres tener tu propia rama serverfix, donde puedas trabajar, puedes crearla directamente basandote en rama remota:</p>
+<div>
+  <pre>$ git checkout -b serverfix origin/serverfix  Branch serverfix set up to track remote branch refs/remotes/origin/serverfix.  Switched to a new branch &quot;serverfix&quot;Switched to a new branch &quot;serverfix&quot;</pre>
+</div>
+<p>Esto sí te da una rama local donde puedes trabajar, comenzando donde origin/serverfix estaba en ese momento.</p>
+<h3 id="haciendo_seguimiento_a_las_ramas">3.5.2. Haciendo seguimiento a las ramas</h3>
+<p>Activando (<em>checkout</em>) una rama local a partir de una rama remota, se crea automáticamente lo que podríamos denominar &quot;una rama de seguimiento&quot; (<em>tracking branch</em>). Las ramas de seguimiento son ramas locales que tienen una relación directa con alguna rama remota. Si estás en una rama de seguimiento y tecleas el comando git push, Git sabe automáticamente a qué servidor y a qué rama ha de llevar los contenidos. Igualmente, tecleando git pull mientras estamos en una de esas ramas, recupera (<em>fetch</em>) todas las referencias remotas y las consolida (<em>merge</em>) automáticamente en la correspondiente rama remota.</p>
+<p>Cuando clonas un repositorio, este suele crear automáticamente una rama master que hace seguimiento de origin/master. Y es por eso que git push y git pull trabajan directamente, sin necesidad de más argumentos. Sin embargo, puedes preparar otras ramas de seguimiento si deseas tener unas que no hagan seguimiento de ramas en origin y que no sigan a la rama master. El ejemplo más simple, es el que acabas de ver al lanzar el comando git checkout -b [rama] [nombreremoto]/[rama]. Si tienes la versión 1.6.2 de Git, o superior, puedes utilizar también el parámetro --track:</p>
+<div>
+  <pre>$ git checkout --track origin/serverfix  Branch serverfix set up to track remote branch refs/remotes/origin/serverfix.  Switched to a new branch &quot;serverfix&quot;Switched to a new branch &quot;serverfix&quot;</pre>
+</div>
+<p>Para preparar una rama local con un nombre distinto a la del remoto, puedes utilizar:</p>
+<div>
+  <pre>$ git checkout -b sf origin/serverfix  Branch sf set up to track remote branch refs/remotes/origin/serverfix.  Switched to a new branch &quot;sf&quot;</pre>
+</div>
+<p>Así, tu rama local sf va a llevar (<em>push</em>) y traer (<em>pull</em>) hacia o desde origin/serverfix.</p>
+<h3 id="borrando_ramas_remotas">3.5.3. Borrando ramas remotas</h3>
+<p>Imagina que ya has terminado con una rama remota. Es decir, tanto tu como tus colaboradores habeis completado una determinada funcionalidad y la habeis incorporado (<em>merge</em>) a la rama master en el remoto (o donde quiera que tengais la rama de código estable). Puedes borrar la rama remota utilizando la un tanto confusa sintaxis: git push [nombreremoto] :[rama]. Por ejemplo, si quieres borrar la rama serverfix del servidor, puedes utilizar:</p>
+<div>
+  <pre>$ git push origin :serverfix  To git@github.com:schacon/simplegit.git   - [deleted]         serverfix</pre>
+</div>
+<p>Y....Boom!. La rama en el servidor ha desaparecido. Puedes grabarte a fuego esta página, porque necesitarás ese comando y, lo más probable es que hayas olvidado su sintaxis. Una manera de recordar este comando es dándonos cuenta de que proviene de la sintaxis git push [nombreremoto] [ramalocal]:[ramaremota]. Si omites la parte [ramalocal], lo que estás diciendo es: <em>&quot;no cojas nada de mi lado y haz con ello [ramaremota]&quot;</em>.</p>
+<p>&nbsp;</p>
+<p>Imagina que decides incorporar tus cambios de la parte cliente sobre el proyecto principal, para hacer un lanzamiento de versión; pero no quieres lanzar aún los cambios de la parte server porque no están aún suficientemente probados. Puedes coger los cambios del cliente que no estan en server (C8 y C9), y reaplicarlos sobre tu rama principal usando la opción --onto del comando git rebase:</p>
+<div>
+  <pre>$ git rebase --onto master server client</pre>
+</div>
+<p>Esto viene a decir: &quot;Activa la rama client, averigua los cambios desde el ancestro común entre las ramas client y server, y aplicalos en la rama master. Puede parecer un poco complicado, pero los resultados, mostrados en la Figura 3-32, son realmente interesantes.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body>
+</html>
