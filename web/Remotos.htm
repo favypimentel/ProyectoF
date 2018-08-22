@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- TemplateBeginEditable name="doctitle" -->
+<title>Documento sin título</title>
+<!-- TemplateEndEditable -->
+<!-- TemplateBeginEditable name="head" -->
+<!-- TemplateEndEditable -->
+</head>
+
+<body>
+<h1>2.5 Fundamentos de Git - Trabajar con Remotos</h1>
+<div>
+  <h2 id="r_remote_repos">Trabajar con Remotos</h2>
+  <div>
+    <p>Para poder colaborar en cualquier proyecto Git, necesitas saber cómo gestionar repositorios remotos. Los repositorios remotos son versiones de tu proyecto que están hospedadas en Internet en cualquier otra red. Puedes tener varios de ellos, y en cada uno tendrás generalmente permisos de solo lectura o de lectura y escritura. Colaborar con otras personas implica gestionar estos repositorios remotos y enviar y traer datos de ellos cada vez que necesites compartir tu trabajo. Gestionar repositorios remotos incluye saber cómo añadir un repositorio remoto, eliminar los remotos que ya no son válidos, gestionar varias ramas remotas y definir si deben rastrearse o no, y más. En esta sección, trataremos algunas de estas habilidades de gestión de remotos.</p>
+  </div>
+  <div>
+    <h3 id="_ver_tus_remotos">Ver Tus Remotos</h3>
+    <div>
+      <p>Para ver los remotos que tienes configurados, debes ejecutar el comando git remote. Mostrará los nombres de cada uno de los remotos que tienes especificados. Si has clonado tu repositorio, deberías ver al menos <em>origin</em> (origen, en inglés) - este es el nombre que por defecto Git le da al servidor del que has clonado:</p>
+      <pre>$ git clone https://github.com/schacon/ticgit  Cloning into 'ticgit'...  
+remote: Reusing existing pack: 1857, done.  remote: Total 1857 (delta 0), reused 0 (delta 0)  
+Receiving objects: 100% (1857/1857), 374.35 KiB | 268.00 KiB/s, done.  Resolving deltas: 100% (772/772), done.  
+Checking connectivity... done.  $ cd ticgit  $ git remote  origin</pre>
+      <p>&nbsp;</p>
+    </div>
+  </div>
+</div>
+<div>
+  <p>También puedes pasar la opción -v, la cual muestra las URLs que Git ha asociado al nombre y que serán usadas al leer y escribir en ese remoto:</p>
+</div>
+<div>
+  <div>
+    <pre>$ git remote -v  origin	https://github.com/schacon/ticgit (fetch)  origin	https://github.com/schacon/ticgit (push)</pre>
+  </div>
+</div>
+<p>&nbsp;</p>
+</body>
+</html>
